@@ -13,13 +13,14 @@ ubyte[20] hmac_sha1(string key, string message){
         foreach(b; message) byte_message ~= b.to!ubyte();
     
     
-    ubyte[B] ipad = iota(0,B).map!(a=>0x36)().array().map!(a=>a.to!ubyte())().array();
-    ubyte[B] opad = iota(0,B).map!(a=>0x5c)().array().map!(a=>a.to!ubyte())().array();
+    ubyte[64] ipad;
+        ipad[] = to!(ubyte)(0x36);
+    ubyte[64] opad;
+        opad[] = to!(ubyte)(0x5c);
     
     if(byte_key.length > B) byte_key = sha1Of(byte_key);
     
-    int count = B - byte_key.length.to!int();
-    for(int i = 0; i < count; i++) byte_key ~= [0];
+    byte_key ~= new ubyte[B - byte_key.length.to!int()];
     
     ubyte[B] primeHashText;
     for(int i=0; i < B; i++) primeHashText[i] = to!ubyte(byte_key[i] ^ ipad[i]);
