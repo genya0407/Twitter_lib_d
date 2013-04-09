@@ -378,14 +378,226 @@ class Twitter{
         }
         
     /+ Suggested Users +/
-        public auto suggestions(string[string] options = ["":""]){
+        public auto suggestions_userlist(string[string] options = ["":""]){
             string url = "http://api.twitter.com/1.1/users/suggestions/" ~ options["slug"] ~ ".json";
             options.remove("slug");
             return requesting(options, url, "GET");
         }
         
+        public auto suggestions_category(string[string] options = ["":""]){
+            string url = "http://api.twitter.com/1.1/users/suggestions.json";
+            return requesting(options, url, "GET");
+        }
         
+        public auto suggestions_statuses(string[string] options = ["":""]){
+            string url = "http://api.twitter.com/1.1/users/suggestions/" ~ options["slug"] ~ "/members.json";
+            return requesting(options, url, "GET");
+        }
+    
+    /+ Favorites +/
+        public auto favorites_list(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/favorites/list.json";
+            return requesting(options, url, "GET");
+        }
         
+        public auto favorites_destroy(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/favorites/destroy.json";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto favorites_create(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/favorites/create.json";
+            return requesting(options, url, "POST");
+        }
+        
+    /+ Lists +/
+        public auto my_lists(string[string] options = ["":""]){
+            string url = "http://api.twitter.com/1.1/lists/list.json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto list_statuses(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/statuses.json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto destroy_list_member(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/members/destroy.json";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto list_subscribers(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/subscribers.json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto list_subscribers_create(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/subscribers/create.json";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto list_subscribers_show(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/subscribers/show.json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto list_subscribers_destroy(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/subscribers/destroy.json";
+            return requesting(options, url, "POST");
+        }
+        public auto list_members_create_all(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/members/create_all.json";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto list_members_show(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/members/show.json";
+            return requesting(options, url, "GET");
+        }
+        public auto list_members(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/members.json";
+            return requesting(options, url, "GET");
+        }
+        public auto list_members_create(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/members/create.json";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto list_destroy(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/destroy.json";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto list_update(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/update.json";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto list_create(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/create.json";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto list_show(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/show.json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto list_subscriptions(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/subscriptions.json";
+            return requesting(options, url, "GET");
+        }
+        public auto list_member_destroy_all(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/members/destroy_all.json";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto list_ownerships(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/lists/ownerships.json";
+            return requesting(options, url, "GET");
+        }
+        
+    /+ Saved Searches +/
+        public auto saved_searches_list(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/saved_searches/list.json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto show_saved_searches(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/saved_searches/show/:"~options["id"]~".json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto create_saved_searches(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/saved_searches/create.json";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto destroy_saved_searches(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/saved_searches/destroy/"~options["id"]~".json";
+            return requesting(options, url, "POST");
+        }
+        
+    /+ Places & Geo +/
+        public auto geo_place_id(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/geo/id/"~options["place_id"]~".json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto reverse_geocode(string[string] options = ["":""]){
+            string url = "http://api.twitter.com/1.1/geo/reverse_geocode.json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto search_geo(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/geo/search.json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto geo_similar_places(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/geo/similar_places.json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto geo_place(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/geo/place.json";
+            return requesting(options, url, "POST");
+        }
+        
+    /+ Trends +/
+        public auto trend_place(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/trends/place.json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto trend_available(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/trends/available.json";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto trend_closest(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/trends/closest.json";
+            return requesting(options, url, "GET");
+        }
+        
+    /+ Spam Reporting +/
+        public auto report_spam(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/1.1/users/report_spam.json";
+            return requesting(options, url, "POST");
+        }
+        
+    /+ OAuth +/
+        public auto oauth_authenticate(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/oauth/authenticate";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto oauth_authorize(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/oauth/authorize";
+            return requesting(options, url, "GET");
+        }
+        
+        public auto oauth_access_token(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/oauth/access_token";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto oauth_request_token(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/oauth/request_token";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto oauth2_token(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/oauth2/token";
+            return requesting(options, url, "POST");
+        }
+        
+        public auto oauth2_invalidate_token(string[string] options = ["":""]){
+            string url = "https://api.twitter.com/oauth2/invalidate_token";
+            return requesting(options, url, "POST");
+        }
+        
+    /+ Help +/
         
 }
 
