@@ -27,11 +27,13 @@ class Twitter{
     
     string[string] oauth;
     
-    this(string CK, string CS, string AT, string AS){
+    this(string CK, string CS, string AT = "", string AS = "" /+ string AT, string AS +/){
         oauth["CK"] = CK;
         oauth["CS"] = CS;
-        oauth["AT"] = AT;
-        oauth["AS"] = AS;
+        if(AT != "" && AS != ""){
+            oauth["AT"] = AT;
+            oauth["AS"] = AS;
+        }
     }
     
     private auto requesting(string[string] options, string url, string method){
@@ -39,7 +41,7 @@ class Twitter{
         string[string] parameters = parametering(tools);
         
         if(options != ["":""]) foreach(key; options.keys) parameters[key] = options[key];
-        auto sig = signature(tools, url, parameters, method);
+        auto sig = signature([tools["CS"], tools["AS"]].join("?"), url, method, parameters);
         parameters["oauth_signature"] = sig;
         foreach(key; options.keys) parameters.remove(key);
         
@@ -66,8 +68,8 @@ class Twitter{
         return oauth;
     }
     
-    private string signature(string[string] tools,string url, string[string] parameters, string method){
-        return encodeComponent(to!(string)(Base64.encode((hmac_sha1(tools["CS"] ~ "&" ~ tools["AS"], join([method,encodeComponent(url),encodeComponent(map!(x => x ~ "=" ~ parameters[x])(parameters.keys.sort).join("&"))], "&"))))));
+    private string signature(string key, string url, string method, string[string] parameters){
+        return encodeComponent(to!(string)(Base64.encode((hmac_sha1(key, join([method,encodeComponent(url),encodeComponent(map!(x => x ~ "=" ~ parameters[x])(parameters.keys.sort).join("&"))], "&"))))));
     }
     
     private string headering(string[string] params){
@@ -83,58 +85,58 @@ class Twitter{
     /+ Timelines +/
         public auto mentions_timeline(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/mentions_timeline.json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "GET");
         }
         
         public auto user_timeline(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/user_timeline.json";
-            //string[string] options = ["":""] = dating(data);
+
             if(options["user_id"] == "" && options["screen_name"] == ""){writeln("error: set screen_name or user_id"); }
             return requesting(options, url, "GET");
             }
         
         public auto home_timeline(string[string] options = ["":""] ){
             string url = "https://api.twitter.com/1.1/statuses/home_timeline.json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "GET");
         }
         
         public auto retweets_of_me(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/retweets_of_me.json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "GET");
         }
     
     /+ Tweets +/
         public auto retweets(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/retweets/" ~ options["id"] ~ ".json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "GET");
         }
         
         public auto show(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/show.json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "GET");
         }
         
         public auto destroy(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/destroy/" ~ options["id"] ~ ".json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "POST");
         }
         
         public auto update(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/update.json";
             options["status"] = encodeComponent(options["status"]);
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "POST");
         }
         
         public auto retweet(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/retweet/" ~ options["id"] ~ ".json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "POST");
         }
         
@@ -144,14 +146,14 @@ class Twitter{
         
         public auto oembed(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/oembed.json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "GET");
         }
     
     /+ Search +/
         public auto search(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/search/tweets.json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "GET");
         }
     
@@ -159,31 +161,31 @@ class Twitter{
         /+
         public auto filter(string[string] options = ["":""]){
             string url = "https://stream.twitter.com/1.1/statuses/filter.json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "POST");
         }
         
         public auto sample(string[string] options = ["":""]){
             string url = "https://stream.twitter.com/1.1/statuses/sample.json";
-            //string[string] options = ["":""] = dating(data);
+
             return streaming(options, url, "POST");
         }
         
         public auto firehose(string[string] options = ["":""]){
             string url = "https://stream.twitter.com/1.1/statuses/firehose.json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "POST");
         }
         
         public auto user(string[string] options = ["":""]){
             string url = "https://userstream.twitter.com/1.1/user.json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "POST"); 
         }
         
         public auto site(string[string] options = ["":""]){
             string url = "https://sitestream.twitter.com/1.1/site.json";
-            //string[string] options = ["":""] = dating(data);
+
             return requesting(options, url, "POST");
         }
         +/
@@ -599,5 +601,41 @@ class Twitter{
         
     /+ Help +/
         
+        
+    /+ OAuth method +/
+        private auto parametering_oauth(string[string] options = ["":""]){
+            if(options != ["":""]){
+                return ["oauth_consumer_key":oauth["CK"],"oauth_nonce":iota(0,32).map!(a=>letters[uniform(0, letters.length)])().array(),"oauth_signature_method":"HMAC-SHA1", "oauth_timestamp":to!(string)(Clock.currTime.toUnixTime),"oauth_version":"1.0"] ~ options;
+            }else{
+                return ["oauth_consumer_key":oauth["CK"],"oauth_nonce":iota(0,32).map!(a=>letters[uniform(0, letters.length)])().array(),"oauth_signature_method":"HMAC-SHA1", "oauth_timestamp":to!(string)(Clock.currTime.toUnixTime),"oauth_version":"1.0"];
+            }
+        }
+        
+        public auto auth_url(){
+            auto url = "https://api.twitter.com/oauth/request_token";
+            
+            auto method = "GET";
+            auto parameters = parametering_oauth;//["oauth_consumer_key":CK,"oauth_nonce":iota(0,32).map!(a=>letters[uniform(0, letters.length)])().array(),"oauth_signature_method":"HMAC-SHA1", "oauth_timestamp":to!(string)(Clock.currTime.toUnixTime),"oauth_version":"1.0"];
+            
+            auto sig = signature(oauth["CS"]~"&", url, method, parameters);
+            
+            params["oauth_signature"] = sig;
+            string data = map!(a => a~"="~params[a])(params.keys.sort).array().join("&");
+            
+            auto res = get([url,data].join("?")).to!(string)();
+            auto a = res.split("&").map!(a => a.split("="))().array();
+            string[string] res_obj;
+            foreach(elem; a){
+                res_obj[elem[0]] = elem[1];
+            }
+    
+            return res_obj;
+        }
+        
+        /*
+        public void verify(string pin, oauth_token){
+            auto url = "";
+            auto parameters = ["oauth_consumer_key":CK,"oauth_nonce":iota(0,32).map!(a=>letters[uniform(0, letters.length)])().array(),"oauth_signature_method":"HMAC-SHA1", "oauth_timestamp":to!(string)(Clock.currTime.toUnixTime),"oauth_version":"1.0"];
+        */    
 }
 
