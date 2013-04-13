@@ -37,11 +37,11 @@ class Twitter{
     }
     
     private auto requesting(string[string] options, string url, string method){
-        auto tools = oauth_tool();
-        string[string] parameters = parametering(tools);
+        string[string] parameters = parametering();
         
         if(options != ["":""]) foreach(key; options.keys) parameters[key] = options[key];
-        auto sig = signature([tools["CS"], tools["AS"]].join("?"), url, method, parameters);
+        
+        auto sig = signature([oauth["CS"], oauth["AS"]].join("&"), url, method, parameters);
         parameters["oauth_signature"] = sig;
         foreach(key; options.keys) parameters.remove(key);
         
@@ -76,8 +76,8 @@ class Twitter{
         return "OAuth " ~ map!(x => x ~ "=" ~ "\"" ~ params[x] ~ "\"")(params.keys.sort).join(", ");
     }
 
-    private string[string] parametering(string[string] tools){
-        return ["oauth_consumer_key":tools["CK"],"oauth_nonce":iota(0,32).map!(a=>letters[uniform(0, letters.length)])().array(),"oauth_signature_method":"HMAC-SHA1", "oauth_timestamp":to!(string)(Clock.currTime.toUnixTime),"oauth_token":tools["AT"],"oauth_version":"1.0"];
+    private string[string] parametering(){
+        return ["oauth_consumer_key":oauth["CK"],"oauth_nonce":iota(0,32).map!(a=>letters[uniform(0, letters.length)])().array(),"oauth_signature_method":"HMAC-SHA1", "oauth_timestamp":to!(string)(Clock.currTime.toUnixTime),"oauth_token":oauth["AT"],"oauth_version":"1.0"];
     }
     
 /************************************************************************************************************************************/
@@ -85,45 +85,38 @@ class Twitter{
     /+ Timelines +/
         public auto mentions_timeline(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/mentions_timeline.json";
-
             return requesting(options, url, "GET");
         }
         
         public auto user_timeline(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/user_timeline.json";
-
             if(options["user_id"] == "" && options["screen_name"] == ""){writeln("error: set screen_name or user_id"); }
             return requesting(options, url, "GET");
             }
         
         public auto home_timeline(string[string] options = ["":""] ){
             string url = "https://api.twitter.com/1.1/statuses/home_timeline.json";
-
             return requesting(options, url, "GET");
         }
         
         public auto retweets_of_me(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/retweets_of_me.json";
-
             return requesting(options, url, "GET");
         }
     
     /+ Tweets +/
         public auto retweets(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/retweets/" ~ options["id"] ~ ".json";
-
             return requesting(options, url, "GET");
         }
         
         public auto show(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/show.json";
-
             return requesting(options, url, "GET");
         }
         
         public auto destroy(string[string] options = ["":""]){
             string url = "https://api.twitter.com/1.1/statuses/destroy/" ~ options["id"] ~ ".json";
-
             return requesting(options, url, "POST");
         }
         
@@ -605,7 +598,11 @@ class Twitter{
     /+ OAuth method +/
         private auto parametering_oauth(string[string] options = ["":""]){
             if(options != ["":""]){
-                return ["oauth_consumer_key":oauth["CK"],"oauth_nonce":iota(0,32).map!(a=>letters[uniform(0, letters.length)])().array(),"oauth_signature_method":"HMAC-SHA1", "oauth_timestamp":to!(string)(Clock.currTime.toUnixTime),"oauth_version":"1.0"] ~ options;
+                auto res = ["oauth_consumer_key":oauth["CK"],"oauth_nonce":iota(0,32).map!(a=>letters[uniform(0, letters.length)])().array(),"oauth_signature_method":"HMAC-SHA1", "oauth_timestamp":to!(string)(Clock.currTime.toUnixTime),"oauth_version":"1.0"];
+                foreach(elem; options.keys){
+                    res[elem] = options[elem];
+                }
+                return res;
             }else{
                 return ["oauth_consumer_key":oauth["CK"],"oauth_nonce":iota(0,32).map!(a=>letters[uniform(0, letters.length)])().array(),"oauth_signature_method":"HMAC-SHA1", "oauth_timestamp":to!(string)(Clock.currTime.toUnixTime),"oauth_version":"1.0"];
             }
@@ -619,8 +616,8 @@ class Twitter{
             
             auto sig = signature(oauth["CS"]~"&", url, method, parameters);
             
-            params["oauth_signature"] = sig;
-            string data = map!(a => a~"="~params[a])(params.keys.sort).array().join("&");
+            parameters["oauth_signature"] = sig;
+            string data = map!(a => a~"="~parameters[a])(parameters.keys.sort).array().join("&");
             
             auto res = get([url,data].join("?")).to!(string)();
             auto a = res.split("&").map!(a => a.split("="))().array();
@@ -632,10 +629,20 @@ class Twitter{
             return res_obj;
         }
         
-        /*
-        public void verify(string pin, oauth_token){
-            auto url = "";
-            auto parameters = ["oauth_consumer_key":CK,"oauth_nonce":iota(0,32).map!(a=>letters[uniform(0, letters.length)])().array(),"oauth_signature_method":"HMAC-SHA1", "oauth_timestamp":to!(string)(Clock.currTime.toUnixTime),"oauth_version":"1.0"];
-        */    
+        public void verify(string pin, string oauth_token, string oauth_token_secret){
+            auto url = "https://api.twitter.com/oauth/authorize";
+            auto method = "GET";
+            auto parameters = ["oauth_consumer_key":oauth["CK"],"oauth_nonce":iota(0,32).map!(a=>letters[uniform(0, letters.length)])().array(),"oauth_signature_method":"HMAC-SHA1", "oauth_timestamp":to!(string)(Clock.currTime.toUnixTime),"oauth_version":"1.0"];
+            parameters["oauth_token"] = oauth_token;
+            parameters["oauth_verifier"] = pin;
+            auto sig = signature([oauth["CS"], oauth_token_secret].join("&"), url, method, parameters);
+            parameters["oauth_signature"] = sig;
+            
+            auto http = HTTP();
+            http.addRequestHeader("Authorization","OAuth");
+            auto res = get(url~"?"~parameters.keys.map!(a => a~"="~parameters[a])().array().join("&"));
+            writeln(res);
+        }
+        
 }
 
